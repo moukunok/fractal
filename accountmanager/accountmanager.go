@@ -37,13 +37,13 @@ const (
 )
 
 type AccountAction struct {
-	Founder     common.Name
-	ChargeRatio uint64
-	PublicKey   common.PubKey
+	Founder     common.Name   `json:"founder,omitempty"`
+	ChargeRatio uint64        `json:"chargeRatio,omitempty"`
+	PublicKey   common.PubKey `json:"publicKey,omitempty"`
 }
 
 type IncAsset struct {
-	AssetId uint64      `json:"assetid,omitempty"`
+	AssetId uint64      `json:"assetId,omitempty"`
 	Amount  *big.Int    `json:"amount,omitempty"`
 	To      common.Name `json:"account,omitempty"`
 }
@@ -76,6 +76,21 @@ func (am *AccountManager) AccountIsExist(accountName common.Name) (bool, error) 
 		return true, nil
 	}
 	return false, nil
+}
+
+
+//AccountHaveCode check account have code
+func (am *AccountManager) AccountHaveCode(accountName common.Name) (bool, error) {
+	//check is exist
+	acct, err := am.GetAccountByName(accountName)
+	if err != nil {
+		return false, err
+	}
+	if acct == nil {
+		return false, ErrAccountNotExist
+	}
+
+	return acct.HaveCode(), nil	
 }
 
 //AccountIsEmpty check account is empty
@@ -869,14 +884,14 @@ func (am *AccountManager) process(action *types.Action) error {
 			return err
 		}
 		break
-	//case types.Transfer:
-	//	return am.TransferAsset(action.Sender(), action.Recipient(), action.AssetID(), action.Value())
+	case types.Transfer:   
+		return am.TransferAsset(action.Sender(), action.Recipient(), action.AssetID(), action.Value())
 	default:
 		return ErrUnkownTxType
 	}
 
-	if action.Value().Cmp(big.NewInt(0)) > 0 {
-		return am.TransferAsset(action.Sender(), action.Recipient(), action.AssetID(), action.Value())
-	}
+	// if action.Value().Cmp(big.NewInt(0)) > 0 {
+	// 	return am.TransferAsset(action.Sender(), action.Recipient(), action.AssetID(), action.Value())
+	// }
 	return nil
 }

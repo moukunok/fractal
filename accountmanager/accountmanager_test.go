@@ -1623,7 +1623,7 @@ func TestAccountManager_Process(t *testing.T) {
 		t.Error("Process update account failure")
 	}
 	val, err = ac1.GetBalanceByID(1)
-	if val.Cmp(big.NewInt(10)) != 0 {
+	if val.Cmp(big.NewInt(0)) != 0 {
 		t.Errorf("Process transfer  failure=%v", val)
 	}
 

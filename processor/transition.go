@@ -131,7 +131,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	switch {
 	case actionType == types.CreateContract:
 		ret, st.gas, vmerr = evm.Create(sender, st.action, st.gas)
-	case actionType == types.Transfer:
+	case actionType == types.CallContract:
 		ret, st.gas, vmerr = evm.Call(sender, st.action, st.gas)
 	case actionType == types.RegProducer:
 		fallthrough

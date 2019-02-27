@@ -78,6 +78,13 @@ func NewAccount(accountName common.Name, founderName common.Name, pubkey common.
 	return &acctObject, nil
 }
 
+func (a *Account) HaveCode() bool {
+    if a.GetCodeSize() == 0 {
+		return false
+	}
+	return true
+}
+
 func (a *Account) IsEmpty() bool {
 	if a.GetCodeSize() == 0 && len(a.Balances) == 0 && a.Nonce == 0 {
 		return true
