@@ -1536,6 +1536,7 @@ func TestAccountManager_Process(t *testing.T) {
 	pubkey, _ := GeneragePubKey()
 	pubkey1, _ := GeneragePubKey()
 	aa := &AccountAction{
+		AccountName: common.Name("a123456789addd"),
 		ChargeRatio: 10,
 		PublicKey:   pubkey,
 	}
@@ -1544,6 +1545,7 @@ func TestAccountManager_Process(t *testing.T) {
 		panic("rlp payload err")
 	}
 	aa1 := &AccountAction{
+		AccountName: common.Name("a123456789addd"),
 		ChargeRatio: 99,
 		PublicKey:   pubkey1,
 	}
@@ -1623,7 +1625,7 @@ func TestAccountManager_Process(t *testing.T) {
 		t.Error("Process update account failure")
 	}
 	val, err = ac1.GetBalanceByID(1)
-	if val.Cmp(big.NewInt(0)) != 0 {
+	if val.Cmp(big.NewInt(10)) != 0 {
 		t.Errorf("Process transfer  failure=%v", val)
 	}
 

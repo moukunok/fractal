@@ -37,6 +37,7 @@ const (
 )
 
 type AccountAction struct {
+	AccountName common.Name   `json:"accountName,omitempty"`
 	Founder     common.Name   `json:"founder,omitempty"`
 	ChargeRatio uint64        `json:"chargeRatio,omitempty"`
 	PublicKey   common.PubKey `json:"publicKey,omitempty"`
@@ -794,8 +795,12 @@ func (am *AccountManager) Process(action *types.Action) error {
 func (am *AccountManager) process(action *types.Action) error {
 	switch action.Type() {
 	case types.CreateAccount:
-		key := common.BytesToPubKey(action.Data())
-		if err := am.CreateAccount(action.Recipient(), common.Name(""), 0, key); err != nil {
+		var acct AccountAction
+		err := rlp.DecodeBytes(action.Data(), &acct)
+		if err != nil {
+			return err
+		}		
+		if err := am.CreateAccount(acct.AccountName, common.Name(""), 0, acct.PublicKey); err != nil {
 			return err
 		}
 		break
