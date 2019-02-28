@@ -29,6 +29,12 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// ForkID  represents a blockchain fork
+type ForkID struct {
+	Cur  uint64
+	Next uint64
+}
+
 // Header represents a block header in the blockchain.
 type Header struct {
 	ParentHash   common.Hash `json:"parentHash"`
@@ -43,6 +49,9 @@ type Header struct {
 	GasUsed      uint64      `json:"gasUsed"`
 	Time         *big.Int    `json:"timestamp"`
 	Extra        []byte      `json:"extraData"`
+
+	// additional fields (for forward compatibility).
+	AdditionalFields []rlp.RawValue `rlp:"tail"`
 }
 
 // Hash returns the block hash of the header, which is simply the keccak256 hash of its
@@ -55,8 +64,9 @@ type Block struct {
 	Txs  []*Transaction
 
 	// caches
-	hash atomic.Value
-	size atomic.Value
+	forkID atomic.Value
+	hash   atomic.Value
+	size   atomic.Value
 }
 
 // NewBlock creates a new block. The input data is copied,
@@ -82,6 +92,14 @@ func NewBlock(header *Header, txs []*Transaction, receipts []*Receipt) *Block {
 // will not affect the block.
 func NewBlockWithHeader(header *Header) *Block {
 	return &Block{Head: CopyHeader(header)}
+}
+
+// WithForkID store fork id
+func (b *Block) WithForkID(cur, next uint64) {
+	forkID := ForkID{Cur: cur, Next: next}
+	bytes, _ := rlp.EncodeToBytes(forkID)
+	b.Head.AdditionalFields = append(b.Head.AdditionalFields, rlp.RawValue(bytes))
+	b.forkID.Store(forkID)
 }
 
 // Transactions returns the block's txs.
@@ -128,6 +146,32 @@ func (b *Block) Header() *Header { return CopyHeader(b.Head) }
 
 // Body returns the block's Body.
 func (b *Block) Body() *Body { return &Body{b.Txs} }
+
+// CurForkID returns the block's current fork ID.
+func (b *Block) CurForkID() uint64 {
+	if forkID := b.forkID.Load(); forkID != nil {
+		return forkID.(ForkID).Cur
+	}
+	forkID := ForkID{}
+	if len(b.Head.AdditionalFields) > 0 {
+		rlp.DecodeBytes(b.Head.AdditionalFields[0], &forkID)
+	}
+	b.forkID.Store(forkID)
+	return forkID.Cur
+}
+
+// NextForkID returns the block's current fork ID.
+func (b *Block) NextForkID() uint64 {
+	if forkID := b.forkID.Load(); forkID != nil {
+		return forkID.(ForkID).Next
+	}
+	forkID := ForkID{}
+	if len(b.Head.AdditionalFields) > 0 {
+		rlp.DecodeBytes(b.Head.AdditionalFields[0], &forkID)
+	}
+	b.forkID.Store(forkID)
+	return forkID.Next
+}
 
 // Size returns the true RLP encoded storage size of the block, either by encoding
 // and returning it, or returning a previsouly cached value.

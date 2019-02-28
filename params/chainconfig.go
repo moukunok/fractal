@@ -35,7 +35,7 @@ type ChainConfig struct {
 	ContractChargeRatio uint64      `json:"contractChargeRatio"`
 	SysTokenID          uint64      `json:"-"`
 	SysTokenDecimals    uint64      `json:"-"`
-	UpperLimit          *big.Int    `json:"upperlimit"` //
+	UpperLimit          *big.Int    `json:"upperlimit"`
 }
 
 var DefaultChainconfig = &ChainConfig{
