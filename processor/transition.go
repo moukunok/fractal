@@ -85,7 +85,7 @@ func (st *StateTransition) buyGas() error {
 	balance, err := st.account.GetAccountBalanceByID(st.from, st.assetID)
 	//balance, err := st.account.GetAccountBalanceByID(st.from, st.assetID)
 	if err != nil {
-		return errInsufficientBalanceForGas
+		return err
 	}
 	if balance.Cmp(mgval) < 0 {
 		return errInsufficientBalanceForGas
